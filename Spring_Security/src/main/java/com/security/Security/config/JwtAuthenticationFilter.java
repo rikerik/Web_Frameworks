@@ -6,30 +6,41 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+
+// JwtAuthenticationFilter is responsible for handling JWT authentication for incoming requests.
+// Extends OncePerRequestFilter to ensure it is executed once per request.
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+            @NonNull HttpServletRequest request,     //the HttpServletRequest object
+            @NonNull HttpServletResponse response,   //the HttpServletResponse object
+            @NonNull FilterChain filterChain         //the FilterChain object
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String jwtToken;
         final String userEmail;
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {      // Check if the Authorization header is missing or doesn't start with "Bearer "
+            filterChain.doFilter(request, response);   // Continue the filter chain for further request processing
             return;
         }
-        jwtToken = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwtToken);
+        jwtToken = authHeader.substring(7);     // Extract the JWT token from the Authorization header
+        userEmail = jwtService.extractUsername(jwtToken);   // Extract the user email from the JWT token using the JwtService
+        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+        }
     }
 }

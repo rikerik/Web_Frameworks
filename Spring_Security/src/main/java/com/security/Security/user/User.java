@@ -27,12 +27,13 @@ public class User implements UserDetails {
     private String lastname;
     private String email;
     private String password;
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) // Use EnumType.STRING to persist the role field as a string in the database
     private Role role;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return List.of(new SimpleGrantedAuthority(role.name()));          // Returns a collection of GrantedAuthority objects representing the user's role
     }
 
     @Override
@@ -47,21 +48,25 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
+        // Indicates whether the user account is expired
         return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
+        // Indicates whether the user account is locked
         return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
+        // Indicates whether the user's credentials (e.g., password) are expired
         return true;
     }
 
     @Override
     public boolean isEnabled() {
+        // Indicates whether the user account is enabled
         return true;
     }
 }
